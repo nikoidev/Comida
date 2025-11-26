@@ -1,7 +1,7 @@
-"""
-Axios interceptor for global error handling
-"""
-import axios from 'axios';
+/**
+ * Axios interceptor for global error handling
+ */
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
     baseURL: 'http://localhost:8000',
@@ -12,15 +12,15 @@ const api = axios.create({
 
 // Request interceptor
 api.interceptors.request.use(
-    (config) => {
+    (config: InternalAxiosRequestConfig) => {
         // Add auth token if available
         const token = localStorage.getItem('access_token');
-        if (token) {
+        if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
-    (error) => {
+    (error: AxiosError) => {
         return Promise.reject(error);
     }
 );
@@ -30,8 +30,8 @@ api.interceptors.response.use(
     (response) => {
         return response;
     },
-    async (error) => {
-        const originalRequest = error.config;
+    async (error: AxiosError) => {
+        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
         // Handle 401 Unauthorized
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -52,7 +52,9 @@ api.interceptors.response.use(
                     localStorage.setItem('refresh_token', newRefreshToken);
 
                     // Retry original request with new token
-                    originalRequest.headers.Authorization = `Bearer ${access_token}`;
+                    if (originalRequest.headers) {
+                        originalRequest.headers.Authorization = `Bearer ${access_token}`;
+                    }
                     return api(originalRequest);
                 } catch (refreshError) {
                     // Refresh failed, redirect to login
@@ -80,7 +82,7 @@ api.interceptors.response.use(
         }
 
         // Handle 500 Internal Server Error
-        if (error.response?.status >= 500) {
+        if (error.response?.status && error.response.status >= 500) {
             console.error('Server error:', error.response.data);
             // You could show a toast notification here
         }
@@ -90,3 +92,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+
