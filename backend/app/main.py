@@ -1,8 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+import time
+from slowapi.errors import RateLimitExceeded
+
 from .core.database import engine, Base
+from .core.logging import app_logger, log_request
+from .core.rate_limiting import limiter, rate_limit_exceeded_handler
+from .core.exceptions import (
+    BaseAPIException,
+    base_api_exception_handler,
+    http_exception_handler,
+    general_exception_handler
+)
 from .api.routes import auth, users, roles, permissions, audit_logs, profile
 
 # Create database tables
@@ -14,6 +25,9 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Add rate limiter state
+app.state.limiter = limiter
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -23,9 +37,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all HTTP requests"""
+    start_time = time.time()
+    
+    response = await call_next(request)
+    
+    duration = (time.time() - start_time) * 1000  # Convert to milliseconds
+    log_request(
+        method=request.method,
+        path=str(request.url.path),
+        status_code=response.status_code,
+        duration=duration
+    )
+    
+    return response
+
+
+# Exception handlers
+app.add_exception_handler(BaseAPIException, base_api_exception_handler)
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+app.add_exception_handler(Exception, general_exception_handler)
+
 # Create uploads directory if it doesn't exist
 uploads_dir = Path("uploads")
 uploads_dir.mkdir(exist_ok=True)
+
+# Create logs directory
+logs_dir = Path("logs")
+logs_dir.mkdir(exist_ok=True)
 
 # Serve uploaded files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
@@ -39,10 +82,32 @@ app.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["Audit Log
 app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
 
 
+@app.on_event("startup")
+async def startup_event():
+    """Log application startup"""
+    app_logger.info("🚀 User Management System API started successfully")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Log application shutdown"""
+    app_logger.info("🛑 User Management System API shutting down")
+
+
 @app.get("/")
 def root():
     return {
         "message": "User Management System API",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "docs": "/docs"
     }
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "version": "2.0.0"
+    }
+
