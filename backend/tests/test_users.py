@@ -152,7 +152,7 @@ class TestDeleteUser:
         # Delete user
         response = client.delete(f"/api/users/{user_id}")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_204_NO_CONTENT
         
         # Verify user is deleted
         get_response = client.get(f"/api/users/{user_id}")
