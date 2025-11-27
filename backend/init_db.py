@@ -10,13 +10,15 @@ def init_db():
     db = SessionLocal()
     
     try:
-        # Check if admin user already exists
-        existing_user = db.query(User).filter(User.username == "admin").first()
-        if existing_user:
-            print("Database already initialized")
+        # Check if data already exists
+        existing_permissions = db.query(Permission).first()
+        if existing_permissions:
+            print("⚠️  Database already has data!")
+            print("Run 'pipenv run python reset_db.py' first if you want to start fresh")
             return
         
         # Create default permissions
+        print("Creating permissions...")
         permissions_data = [
             {"name": "Crear Usuario", "code": "user.create", "resource": "users", "action": "create"},
             {"name": "Leer Usuario", "code": "user.read", "resource": "users", "action": "read"},
@@ -39,8 +41,10 @@ def init_db():
             permissions.append(permission)
         
         db.commit()
+        print(f"✅ Created {len(permissions)} permissions")
         
         # Create admin role with all permissions
+        print("\nCreating roles...")
         admin_role = Role(
             name="Administrador",
             description="Administrador con acceso completo",
@@ -58,12 +62,17 @@ def init_db():
         db.add(user_role)
         
         db.commit()
+        print(f"✅ Created 2 roles")
         
         # Create admin user
+        print("\nCreating users...")
+        print("  Hashing admin password...")
+        admin_password_hash = get_password_hash("admin123")
+        print("  Creating admin user...")
         admin_user = User(
             email="admin@example.com",
             username="admin",
-            hashed_password=get_password_hash("admin123"),
+            hashed_password=admin_password_hash,
             first_name="Admin",
             last_name="User",
             is_active=True,
@@ -73,10 +82,13 @@ def init_db():
         db.add(admin_user)
         
         # Create regular user
+        print("  Hashing user password...")
+        user_password_hash = get_password_hash("user123")
+        print("  Creating regular user...")
         regular_user = User(
             email="user@example.com",
             username="user",
-            hashed_password=get_password_hash("user123"),
+            hashed_password=user_password_hash,
             first_name="Regular",
             last_name="User",
             is_active=True,
@@ -86,13 +98,20 @@ def init_db():
         db.add(regular_user)
         
         db.commit()
+        print("✅ Created 2 users")
         
-        print("Database initialized successfully!")
-        print("Admin user created: username='admin', password='admin123'")
-        print("Regular user created: username='user', password='user123'")
+        print("\n" + "="*50)
+        print("✅ Database initialized successfully!")
+        print("="*50)
+        print("\n📋 Default credentials:")
+        print("  Admin: username='admin', password='admin123'")
+        print("  User:  username='user', password='user123'")
+        print("\n🚀 Next step: Start the backend with 'pipenv run python run.py'")
         
     except Exception as e:
-        print(f"Error initializing database: {e}")
+        print(f"\n❌ Error initializing database: {e}")
+        import traceback
+        traceback.print_exc()
         db.rollback()
     finally:
         db.close()
@@ -100,3 +119,4 @@ def init_db():
 
 if __name__ == "__main__":
     init_db()
+

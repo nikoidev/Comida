@@ -11,7 +11,6 @@ psycopg2-binary = "==2.9.10"
 pydantic = "==2.10.0"
 pydantic-settings = "==2.6.0"
 python-jose = {extras = ["cryptography"], version = "==3.3.0"}
-passlib = {extras = ["bcrypt"], version = "==1.7.4"}
 python-multipart = "==0.0.12"
 alembic = "==1.14.0"
 python-dotenv = "==1.0.1"
@@ -20,6 +19,7 @@ loguru = "==0.7.2"
 slowapi = "==0.1.9"
 pillow = "==10.4.0"
 cryptography = "==43.0.3"
+passlib = {extras = ["bcrypt"], version = "==1.7.4"}
 
 [dev-packages]
 pytest = "==8.3.4"
@@ -31,4 +31,3 @@ flake8 = "==7.1.1"
 
 [requires]
 python_version = "3.13"
-

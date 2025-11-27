@@ -1,131 +1,135 @@
-# 🔧 Solución al Error de Bcrypt y Base de Datos
+# ✅ Base de Datos Inicializada Correctamente
 
-## ❌ Errores Encontrados
+## 🎉 Problema Resuelto
 
-### 1. Error de Bcrypt
-```
-AttributeError: module 'bcrypt' has no attribute '__about__'
-password cannot be longer than 72 bytes
-```
+La base de datos se inicializó exitosamente después de:
+1. Reemplazar `passlib` con `bcrypt` directo
+2. Eliminar la incompatibilidad de versiones
 
-**Causa**: Incompatibilidad entre `bcrypt 5.0.0` (nueva) y `passlib 1.7.4` (antigua)
+## ✅ Estado Actual
 
-### 2. Error de Datos Duplicados
-```
-duplicate key value violates unique constraint
-```
+### Tablas Creadas
+- ✅ `users` (2 usuarios)
+- ✅ `roles` (2 roles)
+- ✅ `permissions` (12 permisos)
+- ✅ `user_roles` (relaciones)
+- ✅ `role_permissions` (relaciones)
+- ✅ `audit_logs` (vacía, lista para usar)
 
-**Causa**: La base de datos ya tiene algunos datos parciales de intentos anteriores
+### Usuarios Creados
+| Username | Password | Email | Rol |
+|----------|----------|-------|-----|
+| admin | admin123 | admin@example.com | Administrador |
+| user | user123 | user@example.com | Usuario |
 
-## ✅ Soluciones Aplicadas
+### Roles Creados
+- **Administrador**: Todos los permisos (12)
+- **Usuario**: Solo permisos de lectura (4)
 
-### 1. Bcrypt Corregido
-Se actualizó `app/core/security.py` con:
-- ✅ Configuración compatible: `bcrypt__ident="2b"`
-- ✅ Validación de longitud de contraseña (máx 72 bytes)
-- ✅ Documentación de funciones
+### Permisos Creados (12 total)
+**Usuarios** (4):
+- user.create, user.read, user.update, user.delete
 
-### 2. Script de Reset
-Se creó `reset_db.py` para limpiar la base de datos
+**Roles** (4):
+- role.create, role.read, role.update, role.delete
 
-## 🚀 Pasos para Inicializar Correctamente
+**Permisos** (4):
+- permission.create, permission.read, permission.update, permission.delete
 
-### Opción 1: Reset Completo (Recomendado)
+## 🚀 Próximos Pasos
 
+### 1. Iniciar el Backend
 ```bash
 cd backend
+pipenv run python run.py
+```
 
-# 1. Resetear base de datos (elimina todo)
+Debería estar disponible en: **http://localhost:8000**  
+Documentación API: **http://localhost:8000/docs**
+
+### 2. Iniciar el Frontend
+```bash
+cd frontend
+npm run build
+npm run start
+```
+
+Debería estar disponible en: **http://localhost:3000**
+
+### 3. Probar el Login
+1. Ir a: http://localhost:3000/login
+2. Usar credenciales:
+   - **Admin**: `admin` / `admin123`
+   - **User**: `user` / `user123`
+
+## 🔧 Cambios Realizados
+
+### Archivo: `app/core/security.py`
+- ❌ Eliminado: `passlib.context.CryptContext`
+- ✅ Agregado: `bcrypt` directo
+- ✅ Funciones: `get_password_hash()`, `verify_password()`
+
+### Archivo: `init_db.py`
+- ✅ Mejorado: Mensajes de progreso detallados
+- ✅ Agregado: Verificación de datos existentes
+- ✅ Agregado: Manejo de errores mejorado
+
+### Archivo: `reset_db.py`
+- ✅ Mejorado: Drop con CASCADE
+- ✅ Agregado: Eliminación de sequences
+- ✅ Agregado: Confirmación de usuario
+
+## 📝 Comandos Útiles
+
+### Resetear Base de Datos
+```bash
+cd backend
 pipenv run python reset_db.py
-# Cuando pregunte, escribe: yes
-
-# 2. Inicializar con datos por defecto
+# Escribir: yes
 pipenv run python init_db.py
 ```
 
-### Opción 2: Reset Manual con pgAdmin
-
-1. Abrir pgAdmin: http://localhost:5051
-2. Conectar a la base de datos `usuarios_db`
-3. Click derecho en cada tabla → Delete/Drop
-4. Ejecutar: `pipenv run python init_db.py`
-
-### Opción 3: Recrear Contenedor Docker
-
+### Ver Datos en PostgreSQL
 ```bash
-# Desde la raíz del proyecto
-docker-compose down -v
-docker-compose up -d
-
-# Luego inicializar
-cd backend
-pipenv run python init_db.py
-```
-
-## ✅ Verificación
-
-Después de ejecutar `init_db.py`, deberías ver:
-
-```
-Database initialized successfully!
-Admin user created: username='admin', password='admin123'
-Regular user created: username='user', password='user123'
-```
-
-## � Tablas Creadas
-
-- ✅ `users` - Usuarios del sistema
-- ✅ `roles` - Roles (Administrador, Usuario)
-- ✅ `permissions` - Permisos (12 permisos por defecto)
-- ✅ `user_roles` - Relación usuarios-roles
-- ✅ `role_permissions` - Relación roles-permisos
-- ✅ `audit_logs` - Registro de actividad
-
-## 🎯 Datos Iniciales
-
-### Usuarios
-| Username | Password | Rol |
-|----------|----------|-----|
-| admin | admin123 | Administrador |
-| user | user123 | Usuario |
-
-### Roles
-- **Administrador**: Todos los permisos
-- **Usuario**: Solo permisos de lectura
-
-### Permisos (12 total)
-- Usuarios: create, read, update, delete
-- Roles: create, read, update, delete
-- Permisos: create, read, update, delete
-
-## 🔍 Comandos Útiles
-
-```bash
-# Ver estado de contenedores
-docker-compose ps
-
-# Ver logs de PostgreSQL
-docker-compose logs usuarios_postgres
-
-# Conectar a PostgreSQL directamente
+# Conectar a la base de datos
 docker exec -it usuarios_postgres psql -U admin -d usuarios_db
 
-# Listar tablas (dentro de psql)
-\dt
+# Comandos útiles dentro de psql:
+\dt                    # Listar tablas
+\d users               # Ver estructura de tabla users
+SELECT * FROM users;   # Ver todos los usuarios
+\q                     # Salir
+```
 
-# Salir de psql
-\q
+### Ver Logs de Docker
+```bash
+docker-compose logs -f usuarios_postgres
 ```
 
 ## ⚠️ Notas Importantes
 
 1. **Contraseñas por defecto**: Cambiar en producción
-2. **Bcrypt límite**: Las contraseñas no pueden exceder 72 bytes
-3. **Reset elimina TODO**: Usar con cuidado en producción
+2. **Bcrypt directo**: Eliminamos passlib por incompatibilidad
+3. **Warning de bcrypt**: Ya no aparece
+4. **Datos persistentes**: Los volúmenes de Docker mantienen los datos
+
+## 🎯 Verificación
+
+Para verificar que todo funciona:
+
+```bash
+# 1. Ver usuarios en la base de datos
+docker exec -it usuarios_postgres psql -U admin -d usuarios_db -c "SELECT username FROM users;"
+
+# 2. Contar permisos
+docker exec -it usuarios_postgres psql -U admin -d usuarios_db -c "SELECT COUNT(*) FROM permissions;"
+
+# 3. Ver roles
+docker exec -it usuarios_postgres psql -U admin -d usuarios_db -c "SELECT name FROM roles;"
+```
 
 ---
 
-**Resumen**: 
-1. Ejecuta `reset_db.py` (escribe "yes")
-2. Ejecuta `init_db.py`
-3. ¡Listo para usar!
+**Estado**: ✅ **Base de Datos Lista para Usar**  
+**Fecha**: 27/11/2025  
+**Versión**: 2.0.0
