@@ -70,7 +70,7 @@ class TestGetPermissions:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert len(data["items"]) == 10
-        assert data["total"] == 15
+        assert data["total"] == 16  # 15 created + 1 admin
     
     def test_get_permissions_filter_by_resource(self, client):
         """Test filtering permissions by resource"""
@@ -193,7 +193,7 @@ class TestDeletePermission:
         # Delete permission
         response = client.delete(f"/api/permissions/{permission_id}")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_204_NO_CONTENT
         
         # Verify permission is deleted
         get_response = client.get(f"/api/permissions/{permission_id}")

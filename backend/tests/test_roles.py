@@ -64,7 +64,7 @@ class TestGetRoles:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert len(data["items"]) == 10
-        assert data["total"] == 15
+        assert data["total"] == 16  # 15 created + 1 admin
     
     def test_get_roles_with_filter(self, client):
         """Test filtering roles by active status"""
@@ -141,7 +141,7 @@ class TestDeleteRole:
         # Delete role
         response = client.delete(f"/api/roles/{role_id}")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_204_NO_CONTENT
         
         # Verify role is deleted
         get_response = client.get(f"/api/roles/{role_id}")

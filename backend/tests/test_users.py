@@ -46,13 +46,13 @@ class TestGetUsers:
     """Test get users list endpoint"""
     
     def test_get_users_empty(self, client):
-        """Test getting users when database is empty"""
+        """Test getting users when database has only admin user"""
         response = client.get("/api/users/")
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["items"] == []
-        assert data["total"] == 0
+        assert data["total"] == 1  # Admin user exists
+        assert len(data["items"]) == 1
     
     def test_get_users_with_pagination(self, client, test_user_data):
         """Test getting users with pagination"""
@@ -69,7 +69,7 @@ class TestGetUsers:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert len(data["items"]) == 10
-        assert data["total"] == 15
+        assert data["total"] == 16  # 15 created + 1 admin
         assert data["page"] == 1
         assert data["pages"] == 2
     
