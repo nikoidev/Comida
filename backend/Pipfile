@@ -20,6 +20,7 @@ slowapi = "==0.1.9"
 pillow = "==10.4.0"
 cryptography = "==43.0.3"
 passlib = {extras = ["bcrypt"], version = "==1.7.4"}
+python-slugify = "*"
 
 [dev-packages]
 pytest = "==8.3.4"
