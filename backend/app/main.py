@@ -15,14 +15,15 @@ from .core.exceptions import (
     general_exception_handler
 )
 from .api.routes import auth, users, roles, permissions, audit_logs, profile
+from .api.routes import restaurants, categories, menu_items, ingredients
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="User Management System API",
-    description="Complete CRUD API for Users, Roles, and Permissions with Audit Log",
-    version="2.0.0"
+    title="Comida - Food Business CMS API",
+    description="Complete CMS for food businesses with menu management, user authentication, and RBAC",
+    version="3.0.0"
 )
 
 # Add rate limiter state
@@ -80,6 +81,12 @@ app.include_router(roles.router, prefix="/api/roles", tags=["Roles"])
 app.include_router(permissions.router, prefix="/api/permissions", tags=["Permissions"])
 app.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["Audit Logs"])
 app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
+
+# CMS routers
+app.include_router(restaurants.router, prefix="/api/restaurants", tags=["Restaurants"])
+app.include_router(categories.router, prefix="/api/categories", tags=["Categories"])
+app.include_router(menu_items.router, prefix="/api/menu-items", tags=["Menu Items"])
+app.include_router(ingredients.router, prefix="/api/ingredients", tags=["Ingredients"])
 
 
 @app.on_event("startup")

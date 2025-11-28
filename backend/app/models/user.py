@@ -28,3 +28,4 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     roles = relationship("Role", secondary=user_roles, back_populates="users")
+    restaurants = relationship("Restaurant", back_populates="owner")
