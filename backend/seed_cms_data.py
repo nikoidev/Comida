@@ -153,7 +153,7 @@ def seed_cms_data():
             }
         ]
         
-        for pizza_data in pizzas_data:
+        for idx, pizza_data in enumerate(pizzas_data):
             ingredient_names = pizza_data.pop("ingredients")
             
             menu_item = MenuItem(
@@ -163,6 +163,7 @@ def seed_cms_data():
                 currency="USD",
                 is_available=True,
                 is_featured=(pizza_data["name"] == "Pizza Margarita"),
+                order=idx,
                 **pizza_data
             )
             db.add(menu_item)
@@ -187,7 +188,7 @@ def seed_cms_data():
             {"name": "Limonada Natural", "price": Decimal("3.00")}
         ]
         
-        for bev_data in beverages_data:
+        for idx, bev_data in enumerate(beverages_data):
             menu_item = MenuItem(
                 restaurant_id=restaurant.id,
                 category_id=categories["Bebidas"].id,
@@ -195,7 +196,8 @@ def seed_cms_data():
                 description=f"Refrescante {bev_data['name']}",
                 price=bev_data["price"],
                 currency="USD",
-                is_available=True
+                is_available=True,
+                order=idx
             )
             db.add(menu_item)
             db.commit()
