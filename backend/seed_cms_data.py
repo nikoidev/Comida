@@ -192,6 +192,7 @@ def seed_cms_data():
             menu_item = MenuItem(
                 restaurant_id=restaurant.id,
                 category_id=categories["Bebidas"].id,
+                name=bev_data["name"],
                 slug=bev_data["name"].lower().replace(" ", "-"),
                 description=f"Refrescante {bev_data['name']}",
                 price=bev_data["price"],
